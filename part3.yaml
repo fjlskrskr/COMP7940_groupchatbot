@@ -1,0 +1,30 @@
+version: '3'
+services:
+  chatbot:
+    image: 7940image
+    environment:
+      #telegram
+      - ACCESS_TOKEN=5110206446:AAE6HFwDnfuw8DR04ScFadmfAmKHdVAz9rE      
+      #redis
+      - HOST=redis
+      - PASSWORD=comp7940passwordlab8
+      - REDISPORT=6379
+    command: chatbot.py
+    entrypoint: python
+    # missing instructions for setting environment variable
+    # missing instructions for setting the entrypoint and/or command
+    depends_on:
+      - redis
+  redis:
+    image: redis
+    volumes:
+       - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["/usr/local/etc/redis/redis.conf"]
+
+# HOST=redis
+# PASSWORD=comp7940passwordlab8
+# REDISPORT=6379
+
+# HOST=redis-13016.c1.asia-northeast1-1.gce.cloud.redislabs.com
+# PASSWORD=SGKa5AKYavMyY6H4uwVuB1ftyqxy7OYA
+# REDISPORT=13016
