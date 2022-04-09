@@ -6,6 +6,8 @@ import configparser
 import logging
 import redis
 
+from chatbot_SONG import *
+
 global redis1
 
 def main():
@@ -43,7 +45,7 @@ def main():
     updater.idle()
 
 
-def echo(update, context):
+def echo(update, context): #将输入字符变成大写形式返回
     reply_message = update.message.text.upper()
     logging.info("Update: " + str(update))
     logging.info("context: " + str(context))
