@@ -6,7 +6,6 @@ import configparser
 import logging
 import redis
 
-from chatbot_SONG import *
 
 global redis1
 
