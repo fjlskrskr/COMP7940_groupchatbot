@@ -144,7 +144,7 @@ def photo(update: Update, context: CallbackContext) -> int:
     photo_file.download(f'user_photo{i}.jpg')
     storage.child(f'{user.first_name} {user.last_name}/user_photo{i}.jpg').put(f'user_photo{i}.jpg') #传到firebase
 
-    storage.downloadURLWithCompletion
+    # storage.downloadURLWithCompletion   #这里少一个获取url的函数，暂时还没查到
     redis1.hset('climb_photo',f'{user.first_name}{user.last_name}{i}', f'user_photo{i}.jpg')  #在redis里存个序号
     os.remove(f'user_photo{i}.jpg')  #把本地文件删了
 
