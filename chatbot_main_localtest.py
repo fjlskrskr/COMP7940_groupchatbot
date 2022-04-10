@@ -181,7 +181,6 @@ def review(update: Update, context: CallbackContext) -> None:
     userid = str(update['message']['chat']['id'])
     try: 
         global redis1
-        redis1.hdel('review','testtopic4')
         # logging.info(context.args[0])
         #get input topic
         topicname = context.args[0]
@@ -208,8 +207,8 @@ def review(update: Update, context: CallbackContext) -> None:
         #if input '/review'
         #get popular topics
         global sharedict
-        # redis1.hdel('review','testtopic5')
-        # redis1.hdel('review_count','testtopic5')
+        # redis1.hdel('review','testtopic4')
+        # redis1.hdel('review_count','testtopic4')
         popular = top_n_scores(3,redis1.hgetall('review_count'))
         cb_data = str(['shareto',userid])
         #if user turn on receive option: show ON; otherwise: show OFF
