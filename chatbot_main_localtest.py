@@ -6,9 +6,10 @@ import logging
 import redis
 
 global redis1
-#localtest is run on your computer and redislab, it is based on the 'config.ini' (created in the lab lecture).
+
 def main():
     # Load your token and create an Updater for your Bot
+    
     config = configparser.ConfigParser()
     config.read('config.ini')
     updater = Updater(token=(config['TELEGRAM']['ACCESS_TOKEN']), use_context=True)
@@ -30,7 +31,7 @@ def main():
     echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
     dispatcher.add_handler(echo_handler)
     # on different commands - answer in Telegram
-    dispatcher.add_handler(CommandHandler("add", add))
+    # dispatcher.add_handler(CommandHandler("add", add))
     dispatcher.add_handler(CommandHandler("review", review))
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("hello", hello_command))
@@ -113,7 +114,6 @@ def echo(update, context):
         #redis1[review][topicname][msgid] = msgdict
         count += 1
         redis1.hset('review_count',topicname,count)
-        # redis1.hdel('review','')
         del reviewer[userid]
         # cb_data = str(['share',msgsender,topicname])
         update.message.reply_text('You have posted your review on '+topicname+' !')
@@ -181,6 +181,7 @@ def review(update: Update, context: CallbackContext) -> None:
     userid = str(update['message']['chat']['id'])
     try: 
         global redis1
+        redis1.hdel('review','testtopic4')
         # logging.info(context.args[0])
         #get input topic
         topicname = context.args[0]
@@ -200,13 +201,15 @@ def review(update: Update, context: CallbackContext) -> None:
             #get recent reviews
             recentreview = get_recent_reviews(3,topicdict)
             #inlinebutton
-            update.message.reply_text('Here some recent reviews about ' + topicname + ':\n' + recentreview + 'Do you wanna make a review about it?',
+            update.message.reply_text('Here some recent reviews about ' + topicname + ':\n' + recentreview + '\nDo you wanna make a review about it?',
                 reply_markup = InlineKeyboardMarkup([[
                     InlineKeyboardButton('write review',callback_data=cb_data)]]))
     except (IndexError, ValueError):
         #if input '/review'
         #get popular topics
         global sharedict
+        # redis1.hdel('review','testtopic5')
+        # redis1.hdel('review_count','testtopic5')
         popular = top_n_scores(3,redis1.hgetall('review_count'))
         cb_data = str(['shareto',userid])
         #if user turn on receive option: show ON; otherwise: show OFF
@@ -219,7 +222,7 @@ def review(update: Update, context: CallbackContext) -> None:
                 char = i[0] + ': ' + i[1] + ' reviews'
                 charlist += char + '\n'
             update.message.reply_text('Here some hit TV topics:\n' + charlist + 
-                'Try viewing some reviews by typing:\n /review <topicname>\n'+
+                '\nTry viewing some reviews by typing:\n /review <topicname>\n'+
                 'I can also share reviews from others with you if you want.',
                 reply_markup = InlineKeyboardMarkup([[
                         InlineKeyboardButton(share_option,callback_data=cb_data)]]))
