@@ -141,12 +141,13 @@ def photo(update: Update, context: CallbackContext) -> int:
     photo_file = update.message.photo[-1].get_file()
 
     i = int(redis1.get('add')) #这个用户第i张图片
-    photo_file.download(f'user_photo{i}.jpg')
-    storage.child(f'{user.first_name} {user.last_name}/user_photo{i}.jpg').put(f'user_photo{i}.jpg') #传到firebase
+    # photo_file.download(f'user_photo{i}.jpg')
+    # storage.child(f'{user.first_name} {user.last_name}/user_photo{i}.jpg').put(f'user_photo{i}.jpg') #传到firebase
 
     # storage.downloadURLWithCompletion   #这里少一个获取url的函数，暂时还没查到
-    redis1.hset('climb_photo',f'{user.first_name}{user.last_name}{i}', f'user_photo{i}.jpg')  #在redis里存个序号
-    os.remove(f'user_photo{i}.jpg')  #把本地文件删了
+    # redis1.hset('climb_photo',f'{user.first_name}{user.last_name}{i}', f'user_photo{i}.jpg')  #在redis里存个序号
+    redis1.hset('climb_photo',f'{user.first_name}{user.last_name}{i}', f'{photo_file.file_id}')
+    # os.remove(f'user_photo{i}.jpg')  #把本地文件删了
 
     logger.info("Photo of %s: %s", user.first_name, 'user_photo.jpg')
     update.message.reply_text('请输入分享内容')
@@ -252,9 +253,9 @@ def check(update: Update, context: CallbackContext) -> int:
 
     if redis1.hexists('climb_photo',w1) == true:
         photovalue = redis1.hget('climb_photo',w1)
-        print(photovalue)
-        storage.child(f'{w1}/{photovalue}').download('download.jpg')
-        update.message.reply_photo('download.jpg')
+        # print(photovalue)
+        # storage.child(f'{w1}/{photovalue}').download('download.jpg')
+        update.message.reply_photo(f'{photovalue}')
     else:
         update.message.reply_text(
         'auther did not share picture.',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
@@ -270,7 +271,7 @@ def show(update: Update, context: CallbackContext) -> int:
     update.message.reply_text(
         f'{v1}',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
     )
-    os.remove('download.jpg')
+    # os.remove('download.jpg')
     return ConversationHandler.END
 
 def cancel(update: Update, context: CallbackContext) -> int:
