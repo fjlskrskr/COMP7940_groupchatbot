@@ -9,30 +9,32 @@ import redis
 import random
 
 import os
-from firebase import Firebase
 
-config = {
-    'apiKey': '',
-    'authDomain':'group-fa3aa.firebaseapp.com',
-    'databaseURL': 'https://group-fa3aa-default-rtdb.firebaseio.com/',
-    'storageBucket':'group-fa3aa.appspot.com',
-    'serviceAccount': 
-    {
-        "type": "service_account",
-        "project_id": "group-fa3aa",
-        "private_key_id": "434fa614a4ddb163bd61f8d2c27eaf7892c3d746",
-        "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCqs94x5p6TQjqL\nue+FGuG41ZkzzDjTNKPAD/EUW6giUTc7+inL5KkCmzTmg9rAMv9kfWk8P95czixd\nUNs+/Ix/gzAPinw281bd9U/KKzIK4s/7nFfxNWD3SRDlgwkU15IMNLilGTTorTIM\nYMUIQ7sEMBZt3VgCGBgxWSwZ3WjvLhUpsdcI4NTZHipTxpbIMe5LpQ9uXHv28KP8\nf9D3aJf2uuZSuWQCQq5hWxl5NoDEcI3fj74LfF2dWWZ6AeH4VPbbW4EnXdsHJYS4\n7OCXGRMQMElafrVOFXX7BwD323mR6aJuaK2kjMFlIBgXpl6QjjBEuprNYflcqJyI\nVeUd1XhxAgMBAAECggEAD61zU7vthnLHs7uA7wWYA4TCjEpOUb985o/QQWFloLk6\nzGxeWFaI2y9r/VvQxGQqpo0KFDl9b6KT2oIpkLBbKv7edB7w548TxFDaYiPzdaJ9\nHYuvW/zeCfgQ8DNHqz1dMXfKGYemH1SAyzg8AFVQIMNV3AM/KPoThry82ydFkunP\nK6TpzgY/IVUahbH0OtMzoCMauUUXFMxMhvVeISy3WMDCBu6iov/Q9EIoPTQFSgPt\nrWAfg4I9FJrq13jjhpssVfWa/CDDSc3q1vEEyODQqRwnakwQDsvxQyoRW6kjxSk1\nh2yhORhElIlDwIw0nF8gUuuzi1lPe0fqMqIw4sUqwQKBgQDR/vN8ElcIiRzos0/t\ngdymIgtRYLaRVmqsJSeZoxI2NxzIHoiREPcMpuciyvegdfPE5yyb2/BS1QwllYx5\nhyh+Ae5CKnfgu6sZ6n4oPd70k9LTsJ40mReNUYR+xCc2mDUpKAQHPjrQaeNLdQsv\np3YE4PBQK3yQ+rayHKpgWs+W+QKBgQDQGUJl5XsTUPkjkLTYn0qsGSb0WcnMbyCk\noz9Ux/IngJSva9Y/zCVP+os//Y6EhWMQ9seOZxq2PEldM7/skWIbfGlrqGXlbhcp\np0Q+B+xDPJMynS6ecV2wN7kDK6T5bME/G1gTVfeIO8PeYQYPMxx6aYfr/yHlOzlZ\nXPrcduNzOQKBgBZk9vhbSFbLsH6MaNCuUaaR6N0T0ERtj9Ct4aw7vLx1YidhQjUe\nNwptXibSuFevXIC6GoLAkL90ouf7K9Dl/gZ6FDuQJdqciOGppSyLdJRmk0wqAKUh\nUmaqs9OE/Z2P29N4xf0zwLfrIucwIzJAzJA2oMob6RvY8NTLw8ukw5CZAoGAPbig\nNvS/clU7786FtRJZ5X14TlUrQ1VaizpYGF9NdWXvs6/6VeXI01XuY0ZjNO8TGP74\n5UWzaIWtBNXKgPIF9T0LT4Ec59WlTRdtaDCVZMPcrNBt+VSKgy+j0krpnYkiMAN+\nNg3zYxbG23hPgcaZFb2jMN31QbY1JkorpaQlhhECgYBYL+g3M+CN2ab5N2YkZCLC\neup/GS2vAWMyql5Ayy/twwZoMEsiSvSKq8aKYYaAElooUqdopyRyUl1AVWWPmxE9\nuOINGfHYR/T34pfJYfGUtvkBI63AuogjCEIRZEuAZQAnq3I96JSztoSqu2RzJwDh\ng9l/Mi4rUjfo4KuaqiTz/g==\n-----END PRIVATE KEY-----\n",
-        "client_email": "firebase-adminsdk-uyj5o@group-fa3aa.iam.gserviceaccount.com",
-        "client_id": "100843644760052256510",
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-uyj5o%40group-fa3aa.iam.gserviceaccount.com"
-    }
-}
-myfirebase = Firebase(config)
-db = myfirebase.database()
-storage = myfirebase.storage()
+
+# from firebase import Firebase
+
+# config = {
+#     'apiKey': '',
+#     'authDomain':'group-fa3aa.firebaseapp.com',
+#     'databaseURL': 'https://group-fa3aa-default-rtdb.firebaseio.com/',
+#     'storageBucket':'group-fa3aa.appspot.com',
+#     'serviceAccount': 
+#     {
+#         "type": "service_account",
+#         "project_id": "group-fa3aa",
+#         "private_key_id": "434fa614a4ddb163bd61f8d2c27eaf7892c3d746",
+#         "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCqs94x5p6TQjqL\nue+FGuG41ZkzzDjTNKPAD/EUW6giUTc7+inL5KkCmzTmg9rAMv9kfWk8P95czixd\nUNs+/Ix/gzAPinw281bd9U/KKzIK4s/7nFfxNWD3SRDlgwkU15IMNLilGTTorTIM\nYMUIQ7sEMBZt3VgCGBgxWSwZ3WjvLhUpsdcI4NTZHipTxpbIMe5LpQ9uXHv28KP8\nf9D3aJf2uuZSuWQCQq5hWxl5NoDEcI3fj74LfF2dWWZ6AeH4VPbbW4EnXdsHJYS4\n7OCXGRMQMElafrVOFXX7BwD323mR6aJuaK2kjMFlIBgXpl6QjjBEuprNYflcqJyI\nVeUd1XhxAgMBAAECggEAD61zU7vthnLHs7uA7wWYA4TCjEpOUb985o/QQWFloLk6\nzGxeWFaI2y9r/VvQxGQqpo0KFDl9b6KT2oIpkLBbKv7edB7w548TxFDaYiPzdaJ9\nHYuvW/zeCfgQ8DNHqz1dMXfKGYemH1SAyzg8AFVQIMNV3AM/KPoThry82ydFkunP\nK6TpzgY/IVUahbH0OtMzoCMauUUXFMxMhvVeISy3WMDCBu6iov/Q9EIoPTQFSgPt\nrWAfg4I9FJrq13jjhpssVfWa/CDDSc3q1vEEyODQqRwnakwQDsvxQyoRW6kjxSk1\nh2yhORhElIlDwIw0nF8gUuuzi1lPe0fqMqIw4sUqwQKBgQDR/vN8ElcIiRzos0/t\ngdymIgtRYLaRVmqsJSeZoxI2NxzIHoiREPcMpuciyvegdfPE5yyb2/BS1QwllYx5\nhyh+Ae5CKnfgu6sZ6n4oPd70k9LTsJ40mReNUYR+xCc2mDUpKAQHPjrQaeNLdQsv\np3YE4PBQK3yQ+rayHKpgWs+W+QKBgQDQGUJl5XsTUPkjkLTYn0qsGSb0WcnMbyCk\noz9Ux/IngJSva9Y/zCVP+os//Y6EhWMQ9seOZxq2PEldM7/skWIbfGlrqGXlbhcp\np0Q+B+xDPJMynS6ecV2wN7kDK6T5bME/G1gTVfeIO8PeYQYPMxx6aYfr/yHlOzlZ\nXPrcduNzOQKBgBZk9vhbSFbLsH6MaNCuUaaR6N0T0ERtj9Ct4aw7vLx1YidhQjUe\nNwptXibSuFevXIC6GoLAkL90ouf7K9Dl/gZ6FDuQJdqciOGppSyLdJRmk0wqAKUh\nUmaqs9OE/Z2P29N4xf0zwLfrIucwIzJAzJA2oMob6RvY8NTLw8ukw5CZAoGAPbig\nNvS/clU7786FtRJZ5X14TlUrQ1VaizpYGF9NdWXvs6/6VeXI01XuY0ZjNO8TGP74\n5UWzaIWtBNXKgPIF9T0LT4Ec59WlTRdtaDCVZMPcrNBt+VSKgy+j0krpnYkiMAN+\nNg3zYxbG23hPgcaZFb2jMN31QbY1JkorpaQlhhECgYBYL+g3M+CN2ab5N2YkZCLC\neup/GS2vAWMyql5Ayy/twwZoMEsiSvSKq8aKYYaAElooUqdopyRyUl1AVWWPmxE9\nuOINGfHYR/T34pfJYfGUtvkBI63AuogjCEIRZEuAZQAnq3I96JSztoSqu2RzJwDh\ng9l/Mi4rUjfo4KuaqiTz/g==\n-----END PRIVATE KEY-----\n",
+#         "client_email": "firebase-adminsdk-uyj5o@group-fa3aa.iam.gserviceaccount.com",
+#         "client_id": "100843644760052256510",
+#         "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+#         "token_uri": "https://oauth2.googleapis.com/token",
+#         "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+#         "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-uyj5o%40group-fa3aa.iam.gserviceaccount.com"
+#     }
+# }
+# myfirebase = Firebase(config)
+# db = myfirebase.database()
+# storage = myfirebase.storage()
 
 global redis1
 global v1
