@@ -240,19 +240,20 @@ def check(update: Update, context: CallbackContext) -> int:
     # a3 = a2
     # while a3 == a2:
     #     a3 = random.randint(0,n)
-    print(redis1.hkeys('climb_word'))
+    # print(redis1.hkeys('climb_word'))
     w1 = redis1.hkeys('climb_word')[a1] #随机三个key值
-    print(w1)
+    # print(w1)
     # w3 = redis.hkeys('clim_word')[a3]
     # w2 = redis.hkeys('clim_word')[a2]
     global v1
     v1 = redis1.hget('climb_word',w1)  #对应的三个value值
-    print(v1)
+    # print(v1)
     # v2 = redis.hget('clim_word',w2)
     # v3 = redis.hget('clim_word',w3)
-
+    
     if redis1.hexists('climb_photo',w1) == true:
         photovalue = redis1.hget('climb_photo',w1)
+        photovalue = str(photovalue, 'UTF-8')
         # print(photovalue)
         # storage.child(f'{w1}/{photovalue}').download('download.jpg')
         update.message.reply_photo(f'{photovalue}')
