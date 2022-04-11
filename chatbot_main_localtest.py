@@ -1,11 +1,16 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext,CallbackQueryHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update,ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext,CallbackQueryHandler,ConversationHandler
 
 import configparser
 import logging
 import redis
 
+import random
+import os
+
 global redis1
+global v1    #这是登山评论的value值
+SHARE, CHOOSE, PHOTO, CHECK, SHOW = range(5)
 
 def main():
     # Load your token and create an Updater for your Bot
@@ -22,6 +27,20 @@ def main():
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         level=logging.INFO)
     
+    conv_handler = ConversationHandler(   #能自动回复不需要command指令
+        entry_points=[CommandHandler('start', start)],
+        states={
+            CHOOSE: [MessageHandler(Filters.regex('^(check|add)$'), choose)],
+            PHOTO: [MessageHandler(Filters.photo, photo), CommandHandler('skip', skip_photo)],
+            SHARE: [MessageHandler(Filters.text & ~Filters.regex('^(good)$'), share), 
+                    # CommandHandler('skip', skip_end)
+                    ],
+            CHECK: [MessageHandler(Filters.regex('^(good)$'), check)],
+            SHOW: [MessageHandler(Filters.regex('^(good)$'), show)],
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
+    )
+
     #global for /review
     global reviewer
     global sharedict
@@ -30,6 +49,7 @@ def main():
     # register a dispatcher to handle message: here we register an echo dispatcher
     echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
     dispatcher.add_handler(echo_handler)
+    dispatcher.add_handler(conv_handler)
     # on different commands - answer in Telegram
     # dispatcher.add_handler(CommandHandler("add", add))
     dispatcher.add_handler(CommandHandler("review", review))
@@ -126,30 +146,6 @@ def echo(update, context):
     else:
         context.bot.send_message(chat_id=update.effective_chat.id, text= 'I am here.')
 
-
-# Define a few command handlers. These usually take the two arguments update and
-# context. Error handlers also receive the raised TelegramError object in error.
-def help_command(update: Update, context: CallbackContext) -> None:
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('Helping you helping you.')
-
-def hello_command(update: Update, context: CallbackContext) -> None:
-    """Send a message when the command /help is issued."""
-    # logging.info(context.args[0])
-    msg = context.args[0]
-    update.message.reply_text('Good day, ' + msg +  '!')
-
-# def add(update: Update, context: CallbackContext) -> None:
-#     """Send a message when the command /add is issued."""
-#     try: 
-#         global redis1
-#         logging.info(context.args[0])
-#         msg = context.args[0]   # /add keyword <-- this should store the keyword
-#         redis1.incr(msg)
-#         update.message.reply_text('You have said ' + msg +  ' for ' + redis1.get(msg).decode('UTF-8') + ' times.')
-#     except (IndexError, ValueError):
-#         update.message.reply_text('Usage: /add <keyword>')
-
 #review part built by FAN
 def top_n_scores(n, score_dict):
     ''' returns the n most popular from a dict'''
@@ -230,6 +226,120 @@ def review(update: Update, context: CallbackContext) -> None:
                 'I can also share reviews from others with you if you want.',
                 reply_markup = InlineKeyboardMarkup([[
                         InlineKeyboardButton(share_option,callback_data=cb_data)]]))
+
+#输入/start开始流程
+def start(update: Update, context: CallbackContext) -> int:
+    reply_keyboard = [['check', 'add']]
+    update.message.reply_text('This is hiking club, you can post your picture and hiking route or ',
+                                'check other post ramdonly.\t\t',
+                                '***you can use /cancel to quit this process\t\t',
+                                'use choose function upon keyboard, no need to typewrite',
+                                reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    return CHOOSE
+
+#选择check跳转到check，或者add跳转到photo，或者跳过到share
+def choose(update: Update, context: CallbackContext) -> int:
+    if update.message.text == 'add':  
+        update.message.reply_text(
+            'please upload an picture\t\t',
+            '***if you only want to share hiking route, you can use /skip to skip',
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        redis1.incr('add')  
+        return PHOTO
+    elif update.message.text == 'check': 
+        update.message.reply_text(
+            'A random hiking route message will be displayed for you below'
+            ,reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True),
+        )   
+        return CHECK
+    else:
+        return CHOOSE
+
+#从choose来，到share去
+def photo(update: Update, context: CallbackContext) -> int:
+    user = update.message.from_user
+    photo_file = update.message.photo[-1].get_file()
+
+    i = int(redis1.get('add')) #这个用户序号为i的图片
+    redis1.hset('climb_photo',f'{user.first_name}{user.last_name}{i}', f'{photo_file.file_id}')
+
+    update.message.reply_text('you can type your keyboard and share your hiking route now')
+    return SHARE
+
+#从share来，或者从choose用skip来，结束过程
+def share(update: Update, context: CallbackContext) -> int:
+    user = update.message.from_user
+    share_text = update.message.text
+
+    i = int(redis1.get('add'))
+    redis1.hset('climb_word',f'{user.first_name}{user.last_name}{i}', share_text)  #该用户序号为i的评论
+    update.message.reply_text(
+        'Thank for sharing'
+    )
+    return ConversationHandler.END
+
+#skip功能
+def skip_photo(update: Update, context: CallbackContext) -> int: #跳过上传图片那步
+    update.message.reply_text('')
+    return SHARE
+
+#从choose来，到show去，单纯的线性展示流程，一直点按钮
+def check(update: Update, context: CallbackContext) -> int:
+    user = update.message.from_user
+    n = redis1.hlen('climb_word') #获取一共多少条评论
+    a1 = random.randint(0,n-1)  #随机数，本来写的三个，觉得因为有图片可能会刷屏就暂时改为一个
+    # a2 = a1
+    # while a2 == a1:
+    #     a2 = random.randint(0,n)
+    # a3 = a2
+    # while a3 == a2:
+    #     a3 = random.randint(0,n)
+    w1 = redis1.hkeys('climb_word')[a1] #随机三个key值
+    # w3 = redis.hkeys('clim_word')[a3]
+    # w2 = redis.hkeys('clim_word')[a2]
+    global v1   #这里v1要在下一个def用，所以用了个全局变量
+    v1 = redis1.hget('climb_word',w1)  #对应的三个value值
+    # v2 = redis.hget('clim_word',w2)
+    # v3 = redis.hget('clim_word',w3)
+    
+    if redis1.hexists('climb_photo',w1) == True:  #检查该分享是否有上传照片
+        photovalue = redis1.hget('climb_photo',w1)
+        photovalue = str(photovalue, 'UTF-8')   #redis里的哈希表存的是字节类型，要转一下
+        update.message.reply_photo(f'{photovalue}')
+    else:
+        update.message.reply_text(
+        'auther did not share picture.',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
+        )
+    return SHOW
+
+#从check来，结束过程
+def show(update: Update, context: CallbackContext) -> int:
+    global v1  #check里的全局变量
+    update.message.reply_text(
+        f'{v1}',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
+    )
+    return ConversationHandler.END
+
+#取消功能，输入/cancel可随时退出过程
+def cancel(update: Update, context: CallbackContext) -> int:
+    update.message.reply_text(
+        'Bye! ', reply_markup=ReplyKeyboardRemove()
+    )
+    return ConversationHandler.END
+
+
+# Define a few command handlers. These usually take the two arguments update and
+# context. Error handlers also receive the raised TelegramError object in error.
+def help_command(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /help is issued."""
+    update.message.reply_text('Helping you helping you.')
+
+def hello_command(update: Update, context: CallbackContext) -> None:
+    """Send a message when the command /help is issued."""
+    # logging.info(context.args[0])
+    msg = context.args[0]
+    update.message.reply_text('Good day, ' + msg +  '!')
 
 if __name__ == '__main__':
     main()
