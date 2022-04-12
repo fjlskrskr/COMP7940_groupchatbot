@@ -317,7 +317,7 @@ def check(update: Update, context: CallbackContext) -> int:
 def show(update: Update, context: CallbackContext) -> int:
     global v1  #check里的全局变量
     update.message.reply_text(
-        f'{v1}',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
+        f'{v1}',reply_markup=ReplyKeyboardRemove()
     )
     return ConversationHandler.END
 
