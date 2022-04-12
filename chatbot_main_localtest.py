@@ -14,13 +14,17 @@ SHARE, CHOOSE, PHOTO, CHECK, SHOW = range(5)
 
 def main():
     # Load your token and create an Updater for your Bot
-    
+    #global for /review
+    global redis1
+    global reviewer
+    global sharedict
+    reviewer = {}
+    sharedict = {}
+
     config = configparser.ConfigParser()
     config.read('config.ini')
     updater = Updater(token=(config['TELEGRAM']['ACCESS_TOKEN']), use_context=True)
-    dispatcher = updater.dispatcher
-
-    global redis1
+    dispatcher = updater.dispatcher    
     redis1 = redis.Redis(host=(config['REDIS']['HOST']), password=(config['REDIS']['PASSWORD']), port=(config['REDIS']['REDISPORT']),decode_responses=True)
 
     # You can set this logging module, so you will know when and why things do not work as expected
@@ -41,15 +45,13 @@ def main():
         fallbacks=[CommandHandler('cancel', cancel)],
     )
 
-    #global for /review
-    global reviewer
-    global sharedict
-    reviewer = {}
-    sharedict = {}
+    
     # register a dispatcher to handle message: here we register an echo dispatcher
+    dispatcher.add_handler(conv_handler)
     echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
     dispatcher.add_handler(echo_handler)
-    dispatcher.add_handler(conv_handler)
+
+
     # on different commands - answer in Telegram
     # dispatcher.add_handler(CommandHandler("add", add))
     dispatcher.add_handler(CommandHandler("review", review))
@@ -143,8 +145,8 @@ def echo(update, context):
                 context.bot.send_message(chat_id=i, text= msgsender +
                 ' just posted a review on '+topicname+':\n'+msgtext)
     #you can add elif here for other command
-    else:
-        context.bot.send_message(chat_id=update.effective_chat.id, text= 'I am here.')
+    # else:
+    #     context.bot.send_message(chat_id=update.effective_chat.id, text= 'I am here.')
 
 #review part built by FAN
 def top_n_scores(n, score_dict):
@@ -305,8 +307,11 @@ def check(update: Update, context: CallbackContext) -> int:
     
     if redis1.hexists('climb_photo',w1) == True:  #检查该分享是否有上传照片
         photovalue = redis1.hget('climb_photo',w1)
-        photovalue = str(photovalue, 'UTF-8')   #redis里的哈希表存的是字节类型，要转一下
+        # photovalue = str(photovalue, 'UTF-8')   #redis里的哈希表存的是字节类型，要转一下
         update.message.reply_photo(f'{photovalue}')
+        update.message.reply_text(
+        'here the share picture.',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
+        )
     else:
         update.message.reply_text(
         'auther did not share picture.',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
