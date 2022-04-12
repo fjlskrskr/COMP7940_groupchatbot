@@ -281,7 +281,7 @@ def share(update: Update, context: CallbackContext) -> int:
 
 #skip功能
 def skip_photo(update: Update, context: CallbackContext) -> int: #跳过上传图片那步
-    update.message.reply_text('')
+    update.message.reply_text('no upload')
     return SHARE
 
 #从choose来，到show去，单纯的线性展示流程，一直点按钮
