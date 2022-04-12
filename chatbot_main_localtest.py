@@ -230,9 +230,9 @@ def review(update: Update, context: CallbackContext) -> None:
 #输入/start开始流程
 def start(update: Update, context: CallbackContext) -> int:
     reply_keyboard = [['check', 'add']]
-    update.message.reply_text('This is hiking club, you can post your picture and hiking route or ',
-                                'check other post ramdonly.\t\t',
-                                '***you can use /cancel to quit this process\t\t',
+    update.message.reply_text('This is hiking club, you can post your picture and hiking route or '+
+                                'check other post ramdonly.\n\n'+
+                                '***you can use /cancel to quit this process\n\n'+
                                 'use choose function upon keyboard, no need to typewrite',
                                 reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return CHOOSE
@@ -241,7 +241,7 @@ def start(update: Update, context: CallbackContext) -> int:
 def choose(update: Update, context: CallbackContext) -> int:
     if update.message.text == 'add':  
         update.message.reply_text(
-            'please upload an picture\t\t',
+            'please upload an picture\n\n'+
             '***if you only want to share hiking route, you can use /skip to skip',
             reply_markup=ReplyKeyboardRemove(),
         )
