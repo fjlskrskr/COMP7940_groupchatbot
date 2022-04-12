@@ -25,7 +25,7 @@ def main():
     config.read('config.ini')
     updater = Updater(token=(config['TELEGRAM']['ACCESS_TOKEN']), use_context=True)
     dispatcher = updater.dispatcher    
-    redis1 = redis.Redis(host=(config['REDIS']['HOST']), password=(config['REDIS']['PASSWORD']), port=(config['REDIS']['REDISPORT']),decode_responses=True)
+    redis1 = redis.Redis(host=(config['REDIS']['HOST']), password=(config['REDIS']['PASSWORD']), port=(config['REDIS']['REDISPORT']),decode_responses=True, ssl=True)
 
     # You can set this logging module, so you will know when and why things do not work as expected
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -39,8 +39,9 @@ def main():
             SHARE: [MessageHandler(Filters.text & ~Filters.regex('^(good)$'), share), 
                     # CommandHandler('skip', skip_end)
                     ],
-            CHECK: [MessageHandler(Filters.regex('^(good)$'), check)],
-            SHOW: [MessageHandler(Filters.regex('^(good)$'), show)],
+            CHECK: [MessageHandler(Filters.regex('^(OK)$'), check)],
+            # CHECK: [MessageHandler(Filters.regex('^(good)$'), check)],
+            # SHOW: [MessageHandler(Filters.regex('^(good)$'), show)],
         },
         fallbacks=[CommandHandler('cancel', cancel)],
     )
@@ -62,7 +63,8 @@ def main():
     # To start the bot:
     updater.start_polling()
     updater.idle()
-    
+
+#review part built by FJL
 def callback_handler(update: Update, context: CallbackContext):
     #handle callback data from review
     global reviewer
@@ -144,11 +146,7 @@ def echo(update, context):
             if i != userid:
                 context.bot.send_message(chat_id=i, text= msgsender +
                 ' just posted a review on '+topicname+':\n'+msgtext)
-    #you can add elif here for other command
-    # else:
-    #     context.bot.send_message(chat_id=update.effective_chat.id, text= 'I am here.')
 
-#review part built by FAN
 def top_n_scores(n, score_dict):
     ''' returns the n most popular from a dict'''
     #make list of tuple from scores dict
@@ -229,6 +227,7 @@ def review(update: Update, context: CallbackContext) -> None:
                 reply_markup = InlineKeyboardMarkup([[
                         InlineKeyboardButton(share_option,callback_data=cb_data)]]))
 
+#review part built by SNN
 #输入/start开始流程
 def start(update: Update, context: CallbackContext) -> int:
     reply_keyboard = [['check', 'add']]
@@ -243,7 +242,7 @@ def start(update: Update, context: CallbackContext) -> int:
 def choose(update: Update, context: CallbackContext) -> int:
     if update.message.text == 'add':  
         update.message.reply_text(
-            'please upload an picture\n\n'+
+            'Please upload an picture\n\n'+
             '***if you only want to share hiking route, you can use /skip to skip',
             reply_markup=ReplyKeyboardRemove(),
         )
@@ -252,7 +251,7 @@ def choose(update: Update, context: CallbackContext) -> int:
     elif update.message.text == 'check': 
         update.message.reply_text(
             'A random hiking route message will be displayed for you below'
-            ,reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True),
+            ,reply_markup=ReplyKeyboardMarkup([['OK']], one_time_keyboard=True),
         )   
         return CHECK
     else:
@@ -266,7 +265,7 @@ def photo(update: Update, context: CallbackContext) -> int:
     i = int(redis1.get('add')) #这个用户序号为i的图片
     redis1.hset('climb_photo',f'{user.first_name}{user.last_name}{i}', f'{photo_file.file_id}')
 
-    update.message.reply_text('you can type your keyboard and share your hiking route now')
+    update.message.reply_text('You can type your keyboard and share your hiking route now')
     return SHARE
 
 #从share来，或者从choose用skip来，结束过程
@@ -277,13 +276,13 @@ def share(update: Update, context: CallbackContext) -> int:
     i = int(redis1.get('add'))
     redis1.hset('climb_word',f'{user.first_name}{user.last_name}{i}', share_text)  #该用户序号为i的评论
     update.message.reply_text(
-        'Thank for sharing'
+        'Thanks for sharing!'
     )
     return ConversationHandler.END
 
 #skip功能
 def skip_photo(update: Update, context: CallbackContext) -> int: #跳过上传图片那步
-    update.message.reply_text('no upload')
+    update.message.reply_text('You chose to share only your text, start your typing!')
     return SHARE
 
 #从choose来，到show去，单纯的线性展示流程，一直点按钮
@@ -310,21 +309,29 @@ def check(update: Update, context: CallbackContext) -> int:
         # photovalue = str(photovalue, 'UTF-8')   #redis里的哈希表存的是字节类型，要转一下
         update.message.reply_photo(f'{photovalue}')
         update.message.reply_text(
-        'here the share picture.',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
-        )
-    else:
-        update.message.reply_text(
-        'auther did not share picture.',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
-        )
-    return SHOW
-
-#从check来，结束过程
-def show(update: Update, context: CallbackContext) -> int:
-    global v1  #check里的全局变量
-    update.message.reply_text(
         f'{v1}',reply_markup=ReplyKeyboardRemove()
-    )
+        )
+        # update.message.reply_text(
+        # 'here the share picture.',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
+        # )
+    else:
+        # update.message.reply_text(
+        # 'The author only shared a text.',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
+        # )
+        update.message.reply_text('The author only shared a text:')
+        update.message.reply_text(
+        f'{v1}',reply_markup=ReplyKeyboardRemove()
+        )
     return ConversationHandler.END
+    # return SHOW
+
+# #从check来，结束过程
+# def show(update: Update, context: CallbackContext) -> int:
+#     global v1  #check里的全局变量
+#     update.message.reply_text(
+#         f'{v1}',reply_markup=ReplyKeyboardRemove()
+#     )
+#     return ConversationHandler.END
 
 #取消功能，输入/cancel可随时退出过程
 def cancel(update: Update, context: CallbackContext) -> int:
