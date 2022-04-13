@@ -9,7 +9,7 @@ import random
 import os
 
 global redis1
-global v1    #这是登山评论的value值
+global v1    #登山评论的value值
 SHARE, CHOOSE, PHOTO, CHECK, SHOW = range(5)
 
 def main():
