@@ -26,7 +26,7 @@ global reviewer
 global sharedict
 reviewer = {}
 sharedict = {}
-#记得改成os版
+
 #set redis connnection
 # redis1 = redis.Redis(host=(config['REDIS']['HOST']), password=(config['REDIS']['PASSWORD']), port=(config['REDIS']['REDISPORT']),decode_responses=True, ssl=True)
 redis1 = redis.Redis(host=(os.environ['HOST']), password=(os.environ['PASSWORD']), port=(os.environ['REDISPORT']),decode_responses=True, ssl=True)

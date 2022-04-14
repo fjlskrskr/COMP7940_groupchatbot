@@ -1,71 +1,106 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update,ReplyKeyboardMarkup, ReplyKeyboardRemove
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext,CallbackQueryHandler,ConversationHandler
-
-import configparser
+from flask import Flask, request
+from telegram import Bot,InlineKeyboardButton, InlineKeyboardMarkup, Update,ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram.ext import Dispatcher,MessageHandler,CommandHandler,ConversationHandler,Filters,CallbackQueryHandler
+import random
+import os
 import logging
 import redis
 
-import random
-import os
+import configparser
+# config = configparser.ConfigParser()
+# config.read('config.ini')
 
+#chatbot api
+global bot
+#bot token
+global TOKEN
+#server url
+global URL
+#redis database
 global redis1
-global v1    #这是登山评论的value值
+#parameter for /route
+global v1    #登山评论的value值
 SHARE, CHOOSE, PHOTO, CHECK, SHOW = range(5)
+#parameter for /review
+global reviewer
+global sharedict
+reviewer = {}
+sharedict = {}
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-def main():
-    # Load your token and create an Updater for your Bot
-    #global for /review
-    global redis1
-    global reviewer
-    global sharedict
-    reviewer = {}
-    sharedict = {}
+#set redis connnection
+redis1 = redis.Redis(host=(config['REDIS']['HOST']), password=(config['REDIS']['PASSWORD']), port=(config['REDIS']['REDISPORT']),decode_responses=True, ssl=True)
+# redis1 = redis.Redis(host=(os.environ['HOST']), password=(os.environ['PASSWORD']), port=(os.environ['REDISPORT']),decode_responses=True, ssl=True)
+#set server url
+URL = config['WEBHOOK']['URL']
+# URL = os.environ['URL']
+#set chatbot token
+TOKEN = config['TELEGRAM']['ACCESS_TOKEN']
+# TOKEN = os.environ['ACCESS_TOKEN']
+bot = Bot(token=TOKEN)
+#set webhook for chatbot
+bot.setWebhook('{URL}/{HOOK}'.format(URL=URL, HOOK=TOKEN))
+#set update dispatcher
+dispatcher = Dispatcher(bot,None)
 
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-    updater = Updater(token=(config['TELEGRAM']['ACCESS_TOKEN']), use_context=True)
-    dispatcher = updater.dispatcher    
-    redis1 = redis.Redis(host=(config['REDIS']['HOST']), password=(config['REDIS']['PASSWORD']), port=(config['REDIS']['REDISPORT']),decode_responses=True, ssl=True)
-
-    # You can set this logging module, so you will know when and why things do not work as expected
-    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         level=logging.INFO)
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return 'Main page'
+
+# @app.route('/set_webhook', methods=['GET', 'POST'])
+# def set_webhook():
+#     #webhook setting
+#     s = bot.setWebhook('{URL}/{HOOK}'.format(URL=URL, HOOK=TOKEN))
+#     if s:
+#         return "webhook setup ok"
+#     else:
+#         return "webhook setup failed"
+
+@app.route('/{}'.format(TOKEN), methods=['POST'])
+def respond():
+    # retrieve the message in JSON and then transform it to Telegram object
+    update = Update.de_json(request.get_json(force=True), bot)
+    dispatcher.process_update(update)
+    # logging.info("Update: " + str(update.callback_query))
     
-    conv_handler = ConversationHandler(   #能自动回复不需要command指令
-        entry_points=[CommandHandler('start', start)],
-        states={
-            CHOOSE: [MessageHandler(Filters.regex('^(check|add)$'), choose)],
-            PHOTO: [MessageHandler(Filters.photo, photo), CommandHandler('skip', skip_photo)],
-            SHARE: [MessageHandler(Filters.text & ~Filters.regex('^(good)$'), share), 
-                    # CommandHandler('skip', skip_end)
-                    ],
-            CHECK: [MessageHandler(Filters.regex('^(OK)$'), check)],
-            # CHECK: [MessageHandler(Filters.regex('^(good)$'), check)],
-            # SHOW: [MessageHandler(Filters.regex('^(good)$'), show)],
-        },
-        fallbacks=[CommandHandler('cancel', cancel)],
-    )
+    # chat_id = update.message.chat.id
+    # msg_id = update.message.message_id
+    # # Telegram understands UTF-8, so encode text for unicode compatibility
+    # text = update.message.text.encode('utf-8').decode()
 
+    # print("got text message :", text)
+    # response = get_response(text)
+    # bot.sendMessage(chat_id=chat_id, text=response, reply_to_message_id=msg_id)
     
-    # register a dispatcher to handle message: here we register an echo dispatcher
-    dispatcher.add_handler(conv_handler)
-    echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
-    dispatcher.add_handler(echo_handler)
+    # command_handler(update)
 
+    return 'ok'
 
-    # on different commands - answer in Telegram
-    # dispatcher.add_handler(CommandHandler("add", add))
-    dispatcher.add_handler(CommandHandler("review", review))
-    dispatcher.add_handler(CommandHandler("help", help_command))
-    dispatcher.add_handler(CommandHandler("hello", hello_command))
-    #handle callback data
-    dispatcher.add_handler(CallbackQueryHandler(callback_handler))
-    # To start the bot:
-    updater.start_polling()
-    updater.idle()
+# def command_handler(update:Update):
+#     callback = update.callback_query
+#     if callback != None:
+#         callback_handler(update)
+#         return
+#     text = update.message.text
+#     text = text.split(' ',1)[0]
+#     if text == None:
+#         logging.info('Warning: message.text == None')
+#         return
+#     elif '/review' == text:
+#         review(update)
+#     else:
+#         echo(update)
+#     return
 
 #review part built by FJL
-def callback_handler(update: Update, context: CallbackContext):
+def callback_handler(update: Update, context):
     #handle callback data from review
     global reviewer
     global sharedict
@@ -100,7 +135,7 @@ def callback_handler(update: Update, context: CallbackContext):
     except:
         query.edit_message_text(text='Error')
 
-def echo(update, context):
+def echo(update: Update, context):
     #global for /review
     global reviewer
     global sharedict
@@ -144,7 +179,7 @@ def echo(update, context):
         #share new review to other who want to listen
         for i in sharedict:
             if i != userid:
-                context.bot.send_message(chat_id=i, text= msgsender +
+                bot.send_message(chat_id=i, text= msgsender +
                 ' just posted a review on '+topicname+':\n'+msgtext)
 
 def top_n_scores(n, score_dict):
@@ -171,7 +206,7 @@ def get_recent_reviews(n,reviewdict:dict):
         recentreviews += review
     return recentreviews
 
-def review(update: Update, context: CallbackContext) -> None:
+def review(update: Update, context) -> None:
     """Send a message when the command /review is issued."""
     #get userid
     userid = str(update['message']['chat']['id'])
@@ -179,7 +214,9 @@ def review(update: Update, context: CallbackContext) -> None:
         global redis1
         # logging.info(context.args[0])
         #get input topic
-        topicname = context.args[0]
+        text = update.message.text
+        text = text.split(' ',1)
+        topicname = text[1]
         #get topic data from redis
         topicdata = redis1.hget('review',topicname)
         #set callback message
@@ -229,7 +266,7 @@ def review(update: Update, context: CallbackContext) -> None:
 
 #review part built by SNN
 #输入/start开始流程
-def start(update: Update, context: CallbackContext) -> int:
+def start(update: Update, context) -> int:
     reply_keyboard = [['check', 'add']]
     update.message.reply_text('This is hiking club, you can post your picture and hiking route or '+
                                 'check other post ramdonly.\n\n'+
@@ -239,7 +276,7 @@ def start(update: Update, context: CallbackContext) -> int:
     return CHOOSE
 
 #选择check跳转到check，或者add跳转到photo，或者跳过到share
-def choose(update: Update, context: CallbackContext) -> int:
+def choose(update: Update, context) -> int:
     if update.message.text == 'add':  
         update.message.reply_text(
             'Please upload an picture\n\n'+
@@ -258,7 +295,7 @@ def choose(update: Update, context: CallbackContext) -> int:
         return CHOOSE
 
 #从choose来，到share去
-def photo(update: Update, context: CallbackContext) -> int:
+def photo(update: Update, context) -> int:
     user = update.message.from_user
     photo_file = update.message.photo[-1].get_file()
 
@@ -269,7 +306,7 @@ def photo(update: Update, context: CallbackContext) -> int:
     return SHARE
 
 #从share来，或者从choose用skip来，结束过程
-def share(update: Update, context: CallbackContext) -> int:
+def share(update: Update, context) -> int:
     user = update.message.from_user
     share_text = update.message.text
 
@@ -281,12 +318,12 @@ def share(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 #skip功能
-def skip_photo(update: Update, context: CallbackContext) -> int: #跳过上传图片那步
+def skip_photo(update: Update, context) -> int: #跳过上传图片那步
     update.message.reply_text('You chose to share only your text, start your typing!')
     return SHARE
 
 #从choose来，到show去，单纯的线性展示流程，一直点按钮
-def check(update: Update, context: CallbackContext) -> int:
+def check(update: Update, context) -> int:
     user = update.message.from_user
     n = redis1.hlen('climb_word') #获取一共多少条评论
     a1 = random.randint(0,n-1)  #随机数，本来写的三个，觉得因为有图片可能会刷屏就暂时改为一个
@@ -334,24 +371,38 @@ def check(update: Update, context: CallbackContext) -> int:
 #     return ConversationHandler.END
 
 #取消功能，输入/cancel可随时退出过程
-def cancel(update: Update, context: CallbackContext) -> int:
+def cancel(update: Update, context) -> int:
     update.message.reply_text(
         'Bye! ', reply_markup=ReplyKeyboardRemove()
     )
     return ConversationHandler.END
 
-
-# Define a few command handlers. These usually take the two arguments update and
-# context. Error handlers also receive the raised TelegramError object in error.
-def help_command(update: Update, context: CallbackContext) -> None:
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('Helping you helping you.')
-
-def hello_command(update: Update, context: CallbackContext) -> None:
-    """Send a message when the command /help is issued."""
-    # logging.info(context.args[0])
-    msg = context.args[0]
-    update.message.reply_text('Good day, ' + msg +  '!')
+#handle conversation
+conv_handler = ConversationHandler(   #能自动回复不需要command指令
+        entry_points=[CommandHandler('route', start)],
+        states={
+            CHOOSE: [MessageHandler(Filters.regex('^(check|add)$'), choose)],
+            PHOTO: [MessageHandler(Filters.photo, photo), CommandHandler('skip', skip_photo)],
+            SHARE: [MessageHandler(Filters.text & ~Filters.regex('^(good)$'), share), 
+                    # CommandHandler('skip', skip_end)
+                    ],
+            CHECK: [MessageHandler(Filters.regex('^(OK)$'), check)],
+            # CHECK: [MessageHandler(Filters.regex('^(good)$'), check)],
+            # SHOW: [MessageHandler(Filters.regex('^(good)$'), show)],
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
+    )
+dispatcher.add_handler(conv_handler)
+#handle eco
+echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
+dispatcher.add_handler(echo_handler)
+#handle /review
+dispatcher.add_handler(CommandHandler("review", review))
+#handle callback data
+dispatcher.add_handler(CallbackQueryHandler(callback_handler))
+# dispatcher.add_handler(CommandHandler("help", help_command))
+# dispatcher.add_handler(CommandHandler("hello", hello_command))
 
 if __name__ == '__main__':
-    main()
+    app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
+    # app.run(threaded=True)

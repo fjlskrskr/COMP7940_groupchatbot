@@ -1,5 +1,6 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update,ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext,CallbackQueryHandler,ConversationHandler
+from flask import Flask
 
 import configparser
 import logging
@@ -11,6 +12,8 @@ import os
 global redis1
 global v1    #登山评论的value值
 SHARE, CHOOSE, PHOTO, CHECK, SHOW = range(5)
+
+app = Flask(__name__)
 
 def main():
     # Load your token and create an Updater for your Bot
@@ -239,7 +242,7 @@ def start(update: Update, context: CallbackContext) -> int:
     return CHOOSE
 
 #选择check跳转到check，或者add跳转到photo，或者跳过到share
-def choose(update: Update, context: CallbackContext) -> int:
+def choose(update: Update) -> int:
     if update.message.text == 'add':  
         update.message.reply_text(
             'Please upload an picture\n\n'+
@@ -258,7 +261,7 @@ def choose(update: Update, context: CallbackContext) -> int:
         return CHOOSE
 
 #从choose来，到share去
-def photo(update: Update, context: CallbackContext) -> int:
+def photo(update: Update) -> int:
     user = update.message.from_user
     photo_file = update.message.photo[-1].get_file()
 
@@ -269,7 +272,7 @@ def photo(update: Update, context: CallbackContext) -> int:
     return SHARE
 
 #从share来，或者从choose用skip来，结束过程
-def share(update: Update, context: CallbackContext) -> int:
+def share(update: Update) -> int:
     user = update.message.from_user
     share_text = update.message.text
 
@@ -281,12 +284,12 @@ def share(update: Update, context: CallbackContext) -> int:
     return ConversationHandler.END
 
 #skip功能
-def skip_photo(update: Update, context: CallbackContext) -> int: #跳过上传图片那步
+def skip_photo(update: Update) -> int: #跳过上传图片那步
     update.message.reply_text('You chose to share only your text, start your typing!')
     return SHARE
 
 #从choose来，到show去，单纯的线性展示流程，一直点按钮
-def check(update: Update, context: CallbackContext) -> int:
+def check(update: Update) -> int:
     user = update.message.from_user
     n = redis1.hlen('climb_word') #获取一共多少条评论
     a1 = random.randint(0,n-1)  #随机数，本来写的三个，觉得因为有图片可能会刷屏就暂时改为一个
@@ -334,7 +337,7 @@ def check(update: Update, context: CallbackContext) -> int:
 #     return ConversationHandler.END
 
 #取消功能，输入/cancel可随时退出过程
-def cancel(update: Update, context: CallbackContext) -> int:
+def cancel(update: Update) -> int:
     update.message.reply_text(
         'Bye! ', reply_markup=ReplyKeyboardRemove()
     )
