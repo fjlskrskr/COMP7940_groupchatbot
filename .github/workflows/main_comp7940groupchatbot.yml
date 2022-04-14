@@ -5,8 +5,10 @@ name: Build and deploy container app to Azure Web App - comp7940groupchatbot
 
 on:
   push:
-    branches:
-      - main
+    paths:
+      - 'app.py'
+      - 'requirements.txt'
+      - 'Dockerfile'
   workflow_dispatch:
 
 jobs:
