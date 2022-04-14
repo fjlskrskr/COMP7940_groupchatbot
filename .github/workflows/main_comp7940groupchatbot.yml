@@ -30,15 +30,12 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         push: true
-        tags: chatbotregister.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_5ae44ba3970d4cd0bc6a4cd89104d391 }}/comp7940chatbot:${{ github.sha }}
+        tags: chatbotregister.azurecr.io/comp7940chatbot:${{ github.sha }}
         file: ./Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    environment:
-      name: 'production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
     - name: Deploy to Azure Web App
@@ -46,6 +43,5 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: 'comp7940groupchatbot'
-        slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_d7670315c1504c438f4ab88e16d3778f }}
-        images: 'chatbotregister.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_5ae44ba3970d4cd0bc6a4cd89104d391 }}/comp7940chatbot:${{ github.sha }}'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        images: 'chatbotregister.azurecr.io/comp7940chatbot:${{ github.sha }}'
