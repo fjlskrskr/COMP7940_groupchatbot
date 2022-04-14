@@ -178,7 +178,7 @@ def echo(update: Update, context):
         for i in sharedict:
             if i != userid:
                 bot.send_message(chat_id=i, text= msgsender +
-                ' just posted a review on '+topicname+':\n'+msgtext)
+                ' just posted a review on '+topicname+':\n\n'+msgtext)
 
 def top_n_scores(n, score_dict):
     ''' returns the n most popular from a dict'''
@@ -231,7 +231,7 @@ def review(update: Update, context) -> None:
             #get recent reviews
             recentreview = get_recent_reviews(3,topicdict)
             #inlinebutton
-            update.message.reply_text('Here some recent reviews about ' + topicname + ':\n' + recentreview + '\nDo you wanna make a review about it?',
+            update.message.reply_text('Here some recent reviews about ' + topicname + ':\n\n' + recentreview + '\n\nDo you wanna make a review about it?',
                 reply_markup = InlineKeyboardMarkup([[
                     InlineKeyboardButton('write review',callback_data=cb_data)]]))
     except (IndexError, ValueError):
@@ -251,13 +251,13 @@ def review(update: Update, context) -> None:
             for i in popular:
                 char = i[0] + ': ' + i[1] + ' reviews'
                 charlist += char + '\n'
-            update.message.reply_text('Here some hit TV topics:\n' + charlist + 
-                '\nTry viewing some reviews by typing:\n /review <topicname>\n'+
+            update.message.reply_text('Here some hit TV topics:\n\n' + charlist + 
+                '\n\nTry viewing some reviews by typing:\n /review <topicname>\n\n'+
                 'I can also share reviews from others with you if you want.',
                 reply_markup = InlineKeyboardMarkup([[
                         InlineKeyboardButton(share_option,callback_data=cb_data)]]))
         else:
-            update.message.reply_text('Try making a reviews by typing:\n /review <topicname>\n'+
+            update.message.reply_text('Try making a reviews by typing:\n /review <topicname>\n\n'+
                 'I can also share reviews from others with you if you want.',
                 reply_markup = InlineKeyboardMarkup([[
                         InlineKeyboardButton(share_option,callback_data=cb_data)]]))
@@ -375,6 +375,12 @@ def cancel(update: Update, context) -> int:
     )
     return ConversationHandler.END
 
+def help_command(update: Update, context) -> None:
+    """Send a message when the command /help is issued."""
+    update.message.reply_text('Hi! I can help you with these things:\n\n' +
+                                'Reading/writing a TV show review:\n/review\n\n'+
+                                'Sharing a hiking route and photos to other users:\n/route')
+
 #handle conversation
 conv_handler = ConversationHandler(   #能自动回复不需要command指令
         entry_points=[CommandHandler('route', start)],
@@ -398,7 +404,7 @@ dispatcher.add_handler(echo_handler)
 dispatcher.add_handler(CommandHandler("review", review))
 #handle callback data
 dispatcher.add_handler(CallbackQueryHandler(callback_handler))
-# dispatcher.add_handler(CommandHandler("help", help_command))
+dispatcher.add_handler(CommandHandler("help", help_command))
 # dispatcher.add_handler(CommandHandler("hello", hello_command))
 
 if __name__ == '__main__':
