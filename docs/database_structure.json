@@ -14,7 +14,7 @@
     {
         "<topicname>" : 
         {
-            "score" :
+            "message_id" :
             {
                 "text" : "review_text",
                 "sender" : "user.first_name + last_name"
@@ -24,7 +24,7 @@
 
     "review_count" :
     {
-        "<topicname1>" : "number_of_review"
+        "<topicname>" : "number_of_review"
     },
 
     "add" : "unique_number"
