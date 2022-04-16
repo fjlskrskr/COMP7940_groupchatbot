@@ -154,7 +154,7 @@ def echo(update: Update, context):
             topicdict = {}
             count = 0
         #get message id
-        msgid = str(update['message']['message_id'])
+        msgid = str(update['message']['message_id'])  #每个聊天气泡的识别码，三位数字
         #get username
         if update['message']['chat']['last_name'] is None:
             msgsender = update['message']['chat']['first_name']
@@ -180,7 +180,7 @@ def echo(update: Update, context):
                 bot.send_message(chat_id=i, text= msgsender +
                 ' just posted a review on '+topicname+':\n\n'+msgtext)
 
-def top_n_scores(n, score_dict):
+def top_n_scores(n, score_dict):  #按topic下的评论数量进行排序
     ''' returns the n most popular from a dict'''
     #make list of tuple from scores dict
     lot = [(k,v) for k, v in score_dict.items()] 

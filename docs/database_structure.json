@@ -1,0 +1,31 @@
+{
+    "climb_photo" :
+    {
+        "first_name + last_name + order_number" : "photo_file_id" 
+        //order_number仅用作区分每条信息的特殊标识，不作排序使用
+    },
+
+    "climb_word" :
+    {
+        "first_name + last_name + order_number" : "share_text"
+    },
+
+    "review" :
+    {
+        "<topicname>" : 
+        {
+            "message_id" :
+            {
+                "text" : "review_text",
+                "sender" : "user.first_name + last_name"
+            }
+        }
+    },
+
+    "review_count" :
+    {
+        "<topicname>" : "number_of_review"
+    },
+
+    "add" : "unique_number"
+}

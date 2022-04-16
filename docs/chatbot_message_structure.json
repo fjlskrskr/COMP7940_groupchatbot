@@ -1,0 +1,59 @@
+{
+    "update": 
+        {
+            "message": 
+                {
+                    "delete_chat_photo": "False", 
+                    "photo": 
+                    [
+                        {
+                            "height": 79, 
+                            "file_unique_id": "AQADia8xG4RdmFZ4", 
+                            "file_id": "AgACAgUAAxkBAAPmYlK94F_BSU3DIRKR-msWjjHCLVAAAomvMRuEXZhWFN7CUhifU78BAAMCAANzAAMjBA", 
+                            "width": 90, 
+                            "file_size": 1332
+                        }, 
+                        {
+                            "height": 280, 
+                            "file_unique_id": "AQADia8xG4RdmFZy", 
+                            "file_id": "AgACAgUAAxkBAAPmYlK94F_BSU3DIRKR-msWjjHCLVAAAomvMRuEXZhWFN7CUhifU78BAAMCAANtAAMjBA", 
+                            "width": 320, 
+                            "file_size": 21232
+                        }, 
+                        {
+                            "height": 668, 
+                            "file_unique_id": "AQADia8xG4RdmFZ9", 
+                            "file_id": "AgACAgUAAxkBAAPmYlK94F_BSU3DIRKR-msWjjHCLVAAAomvMRuEXZhWFN7CUhifU78BAAMCAAN4AAMjBA", 
+                            "width": 764, 
+                            "file_size": 99986
+                        }     
+                    ], 
+                    "text": "add",     
+                    "new_chat_photo": [], 
+                    "chat": 
+                        {
+                            "last_name": "资本家", 
+                            "type": "private", 
+                            "id": 1993031034, 
+                            "first_name": "九条尾巴的"
+                        }, 
+                    "supergroup_chat_created": "False", 
+                    "caption_entities": [], 
+                    "entities": [], 
+                    "group_chat_created": "False", 
+                    "new_chat_members": [], 
+                    "date": 1649588723, 
+                    "message_id": 218, 
+                    "channel_chat_created": "False", 
+                    "from": 
+                        {
+                            "language_code": "zh-hans", 
+                            "is_bot": "False", 
+                            "id": 1993031034, 
+                            "first_name": "九条尾巴的", 
+                            "last_name": "资本家"
+                        }
+                    }, 
+            "update_id": 252582031
+        }
+}
