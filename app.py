@@ -266,7 +266,7 @@ def review(update: Update, context) -> None:
 #输入/start开始流程
 def start(update: Update, context) -> int:
     reply_keyboard = [['check', 'add']]
-    redis1.delete(b'add', b'climb_photo', b'climb_word')
+    # redis1.delete(b'add', b'climb_photo', b'climb_word')
     update.message.reply_text('This is hiking club, you can post your picture and hiking route or '+
                                 'check other post ramdonly.\n\n'+
                                 '***you can use /cancel to quit this process\n\n'+
@@ -323,41 +323,45 @@ def skip_photo(update: Update, context) -> int: #跳过上传图片那步
 
 #从choose来，到show去，单纯的线性展示流程，一直点按钮
 def check(update: Update, context) -> int:
-    user = update.message.from_user
-    n = redis1.hlen('climb_word') #获取一共多少条评论
-    a1 = random.randint(0,n-1)  #随机数，本来写的三个，觉得因为有图片可能会刷屏就暂时改为一个
-    # a2 = a1
-    # while a2 == a1:
-    #     a2 = random.randint(0,n)
-    # a3 = a2
-    # while a3 == a2:
-    #     a3 = random.randint(0,n)
-    w1 = redis1.hkeys('climb_word')[a1] #随机三个key值
-    # w3 = redis.hkeys('clim_word')[a3]
-    # w2 = redis.hkeys('clim_word')[a2]
-    global v1   #这里v1要在下一个def用，所以用了个全局变量
-    v1 = redis1.hget('climb_word',w1)  #对应的三个value值
-    # v2 = redis.hget('clim_word',w2)
-    # v3 = redis.hget('clim_word',w3)
-    
-    if redis1.hexists('climb_photo',w1) == True:  #检查该分享是否有上传照片
-        photovalue = redis1.hget('climb_photo',w1)
-        # photovalue = str(photovalue, 'UTF-8')   #redis里的哈希表存的是字节类型，要转一下
-        update.message.reply_photo(f'{photovalue}')
-        update.message.reply_text(
-        f'{v1}',reply_markup=ReplyKeyboardRemove()
-        )
-        # update.message.reply_text(
-        # 'here the share picture.',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
-        # )
-    else:
-        # update.message.reply_text(
-        # 'The author only shared a text.',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
-        # )
-        update.message.reply_text('The author only shared a text:')
-        update.message.reply_text(
-        f'{v1}',reply_markup=ReplyKeyboardRemove()
-        )
+    try:
+        user = update.message.from_user
+        n = redis1.hlen('climb_word') #获取一共多少条评论
+        a1 = random.randint(0,n-1)  #随机数，本来写的三个，觉得因为有图片可能会刷屏就暂时改为一个
+        # a2 = a1
+        # while a2 == a1:
+        #     a2 = random.randint(0,n)
+        # a3 = a2
+        # while a3 == a2:
+        #     a3 = random.randint(0,n)
+        w1 = redis1.hkeys('climb_word')[a1] #随机三个key值
+        # w3 = redis.hkeys('clim_word')[a3]
+        # w2 = redis.hkeys('clim_word')[a2]
+        global v1   #这里v1要在下一个def用，所以用了个全局变量
+        v1 = redis1.hget('climb_word',w1)  #对应的三个value值
+        # v2 = redis.hget('clim_word',w2)
+        # v3 = redis.hget('clim_word',w3)
+        
+        if redis1.hexists('climb_photo',w1) == True:  #检查该分享是否有上传照片
+            photovalue = redis1.hget('climb_photo',w1)
+            # photovalue = str(photovalue, 'UTF-8')   #redis里的哈希表存的是字节类型，要转一下
+            update.message.reply_photo(f'{photovalue}')
+            update.message.reply_text(
+            f'{v1}',reply_markup=ReplyKeyboardRemove()
+            )
+            # update.message.reply_text(
+            # 'here the share picture.',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
+            # )
+        else:
+            # update.message.reply_text(
+            # 'The author only shared a text.',reply_markup=ReplyKeyboardMarkup([['good']], one_time_keyboard=True)
+            # )
+            update.message.reply_text('The author only shared a text:')
+            update.message.reply_text(
+            f'{v1}',reply_markup=ReplyKeyboardRemove()
+            )
+    except ValueError:
+        update.message.reply_text('No one has shared the route yet.')
+
     return ConversationHandler.END
     # return SHOW
 
