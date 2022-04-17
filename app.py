@@ -266,6 +266,7 @@ def review(update: Update, context) -> None:
 #输入/start开始流程
 def start(update: Update, context) -> int:
     reply_keyboard = [['check', 'add']]
+    redis1.delete(b'add', b'climb_photo', b'climb_word')
     update.message.reply_text('This is hiking club, you can post your picture and hiking route or '+
                                 'check other post ramdonly.\n\n'+
                                 '***you can use /cancel to quit this process\n\n'+
