@@ -231,7 +231,7 @@ def review(update: Update, context) -> None:
             #get recent reviews
             recentreview = get_recent_reviews(3,topicdict)
             #inlinebutton
-            update.message.reply_text('Here some recent reviews about ' + topicname + ':\n\n' + recentreview + '\n\nDo you wanna make a review about it?',
+            update.message.reply_text('Here some recent reviews about ' + topicname + ':\n\n' + recentreview + '\nDo you wanna make a review about it?',
                 reply_markup = InlineKeyboardMarkup([[
                     InlineKeyboardButton('write review',callback_data=cb_data)]]))
     except (IndexError, ValueError):
@@ -252,7 +252,7 @@ def review(update: Update, context) -> None:
                 char = i[0] + ': ' + i[1] + ' reviews'
                 charlist += char + '\n'
             update.message.reply_text('Here some hit TV topics:\n\n' + charlist + 
-                '\n\nTry viewing some reviews by typing:\n /review <topicname>\n\n'+
+                '\nTry viewing some reviews by typing:\n /review <topicname>\n\n'+
                 'I can also share reviews from others with you if you want.',
                 reply_markup = InlineKeyboardMarkup([[
                         InlineKeyboardButton(share_option,callback_data=cb_data)]]))
@@ -297,7 +297,7 @@ def choose(update: Update, context) -> int:
 def photo(update: Update, context) -> int:
     user = update.message.from_user
     photo_file = update.message.photo[-1].get_file()
-
+    #上传视频会发生什么？
     i = int(redis1.get('add')) #这个用户序号为i的图片
     redis1.hset('climb_photo',f'{user.first_name}{user.last_name}{i}', f'{photo_file.file_id}')
 
@@ -308,7 +308,7 @@ def photo(update: Update, context) -> int:
 def share(update: Update, context) -> int:
     user = update.message.from_user
     share_text = update.message.text
-
+    #上传图片会发什么？
     i = int(redis1.get('add'))
     redis1.hset('climb_word',f'{user.first_name}{user.last_name}{i}', share_text)  #该用户序号为i的评论
     update.message.reply_text(
@@ -380,11 +380,11 @@ def help_command(update: Update, context) -> None:
     """Send a message when the command /help is issued."""
     update.message.reply_text('Hi! I can help you with these things:\n\n' +
                                 'Reading/writing a TV show review:\n/review\n\n'+
-                                'Sharing a hiking route and photos to other users:\n/route')
+                                'Sharing a hiking route and photos to other users:\n/start')
 
 #handle conversation
 conv_handler = ConversationHandler(   #能自动回复不需要command指令
-        entry_points=[CommandHandler('route', start)],
+        entry_points=[CommandHandler('start', start)],
         states={
             CHOOSE: [MessageHandler(Filters.regex('^(check|add)$'), choose)],
             PHOTO: [MessageHandler(Filters.photo, photo), CommandHandler('skip', skip_photo)],
