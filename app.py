@@ -296,8 +296,7 @@ def choose(update: Update, context) -> int:
 #从choose来，到share去
 def photo(update: Update, context) -> int:
     user = update.message.from_user
-    photo_file = update.message.photo[-1].get_file()
-    #上传视频会发生什么？
+    photo_file = update.message.photo[-1].get_file()  #只有传照片才会触发进行下一步，只有照片信息会被记录
     i = int(redis1.get('add')) #这个用户序号为i的图片
     redis1.hset('climb_photo',f'{user.first_name}{user.last_name}{i}', f'{photo_file.file_id}')
 
@@ -307,8 +306,7 @@ def photo(update: Update, context) -> int:
 #从share来，或者从choose用skip来，结束过程
 def share(update: Update, context) -> int:
     user = update.message.from_user
-    share_text = update.message.text
-    #上传图片会发什么？
+    share_text = update.message.text  #只有输入text会出发下一步，只有text内容才会被记录
     i = int(redis1.get('add'))
     redis1.hset('climb_word',f'{user.first_name}{user.last_name}{i}', share_text)  #该用户序号为i的评论
     update.message.reply_text(
