@@ -1,4 +1,6 @@
 # COMP7940_groupchatbot
+Group 7
+
 Fan Junliang 	
 21448973 
 github id: fjlskrskr
